@@ -46,15 +46,31 @@ if __name__ == "__main__":
 
     cap = cv2.VideoCapture(0)
 
-    face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_default.xml')
+    # face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_default.xml')
+    from hub import PyramidBoxLiteMobile
+    model = PyramidBoxLiteMobile()
 
     while(1):
         # get a frame
         ret, frame = cap.read()
-        faces = face_cascade.detectMultiScale(frame, 1.3)
+        if not ret:
+            continue
+        # faces = face_cascade.detectMultiScale(frame, 1.3)
+        faces = model.face_detection(images=[frame])
+        # faces = [(item['top'], item['bottom'], item['left'], item['right']) for item in faces]
+        faces = [(item['left'], 
+                  item['top'], 
+                  item['right'], 
+                  item['bottom']) for item in faces[0]["data"]]
 
-        for x, y, w, h in faces:
+        # for x, y, w, h in faces:
+        for x1, y1, x2, y2 in faces:
+            
+            h, w = y2-y1, x2-x1
+            x, y = x1, y1
+
             curr_img = frame[y:y+h, x:x+w]
+            # curr_img = frame[y1:y2, x1:x2]
 
             res = engine.infer(curr_img)
 
